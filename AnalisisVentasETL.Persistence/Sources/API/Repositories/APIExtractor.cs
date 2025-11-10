@@ -14,7 +14,7 @@ namespace AnalisisVentasETL.Persistence.Sources.API.Repositories
         {
             _httpClient = httpClient;
             _logger = logger;
-            _baseUrl = configuration["ApiSettings::BaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
+            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
         }
 
         public async Task<List<T>> GetDataAsync<T>(string endpoint)
@@ -24,16 +24,27 @@ namespace AnalisisVentasETL.Persistence.Sources.API.Repositories
                 var fullUrl = $"{_baseUrl.TrimEnd('/')}/{endpoint.TrimStart('/')}";
                 _logger.LogInformation("Solicitando datos desde API externa: {Url}", fullUrl);
 
-                var data = await _httpClient.GetFromJsonAsync<List<T>>(fullUrl);
+                var response = await _httpClient.GetAsync(fullUrl);
+                var contentType = response.Content.Headers.ContentType?.MediaType;
 
-                if (data == null)
+                if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("La respuesta de la API en {Url} fue vacía.", fullUrl);
+                    _logger.LogError("Error HTTP {StatusCode} al consumir {Url}", response.StatusCode, fullUrl);
                     return new List<T>();
                 }
 
+                // Verificar si la respuesta es JSON
+                if (contentType == null || !contentType.Contains("json", StringComparison.OrdinalIgnoreCase))
+                {
+                    var contentPreview = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Respuesta no JSON recibida desde API externa: {Preview}", contentPreview.Substring(0, Math.Min(200, contentPreview.Length)));
+                    return new List<T>();
+                }
+
+                var data = await response.Content.ReadFromJsonAsync<List<T>>();
                 _logger.LogInformation("Datos recibidos correctamente desde {Url}", fullUrl);
-                return data;
+
+                return data ?? new List<T>();
             }
             catch (Exception ex)
             {

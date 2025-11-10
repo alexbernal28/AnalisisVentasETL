@@ -16,19 +16,21 @@ namespace AnalisisVentasETL.WRKVentas
         {
             var builder = Host.CreateApplicationBuilder(args);
 
-            builder.Services.AddDbContext<TransactionalDBContext>(optionsAction =>
-            {
-                optionsAction.UseSqlServer(builder.Configuration.GetConnectionString("TransactionalDB") ?? string.Empty);
-            });
+            var transactionalConn = builder.Configuration.GetConnectionString("TransactionalDB")
+                ?? throw new ArgumentNullException("TransactionalDB connection string not configured.");
+
+            var warehouseConn = builder.Configuration.GetConnectionString("DataWarehouse")
+                ?? throw new ArgumentNullException("DataWarehouse connection string not configured.");
+
+            builder.Services.AddDbContext<TransactionalDBContext>(options =>
+                options.UseSqlServer(transactionalConn));
+
+            builder.Services.AddDbContext<DwhDBContext>(options =>
+                options.UseSqlServer(warehouseConn));
 
             builder.Services.AddScoped<IDatabaseExtractor, DatabaseExtractor>();
 
             builder.Services.AddHttpClient<IAPIExtractor, APIExtractor>();
-
-            builder.Services.AddDbContext<DwhDBContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DataWarehouse") ?? string.Empty);
-            });
 
             builder.Services.AddScoped(typeof(IDataLoader<>), typeof(DataLoader<>));
 

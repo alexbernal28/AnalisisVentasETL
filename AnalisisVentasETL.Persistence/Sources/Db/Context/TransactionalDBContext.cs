@@ -12,5 +12,13 @@ namespace AnalisisVentasETL.Persistence.Sources.Db.Context
         public DbSet<CustomerDB> Customers { get; set; } = null!;
         public DbSet<OrderDB> Orders { get; set; } = null!;
         public DbSet<OrderDetailDB> OrderDetails { get; set; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrderDetailDB>()
+                .HasKey(o => new { o.OrderID, o.ProductID });
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

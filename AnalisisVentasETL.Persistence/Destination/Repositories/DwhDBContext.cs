@@ -15,5 +15,15 @@ namespace AnalisisVentasETL.Persistence.Destination.Repositories
         public DbSet<DimTime> DimTimes { get; set; }
         public DbSet<FactSales> FactSales { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<DimProduct>().ToTable("DimProduct");
+            modelBuilder.Entity<DimCustomer>().ToTable("DimCustomer");
+            modelBuilder.Entity<DimTime>().ToTable("DimTime");
+            modelBuilder.Entity<FactSales>().ToTable("FactSales");
+        }
+
     }
 }

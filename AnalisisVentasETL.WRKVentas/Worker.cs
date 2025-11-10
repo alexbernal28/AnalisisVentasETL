@@ -7,6 +7,7 @@ using AnalisisVentasETL.Domain.Entities.Csv;
 using AnalisisVentasETL.Domain.Entities.Db;
 using AnalisisVentasETL.Domain.Entities.Dwh.Dimensions;
 using AnalisisVentasETL.Persistence.Sources.API.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
 namespace AnalisisVentasETL.WRKVentas
@@ -14,40 +15,36 @@ namespace AnalisisVentasETL.WRKVentas
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IProductRepository _productCsvRepository;
-        private readonly IDatabaseExtractor _databaseExtractor;
-        private readonly IAPIExtractor _apiExtractor;
-        private readonly IDimProductRepository _dimProductRepository;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public Worker(
-            ILogger<Worker> logger,
-            IProductRepository productCsvRepository,
-            IDatabaseExtractor databaseExtractor,
-            IAPIExtractor apiExtractor,
-            IDimProductRepository dimProductRepository
-        )
+        public Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
-            _productCsvRepository = productCsvRepository;
-            _databaseExtractor = databaseExtractor;
-            _apiExtractor = apiExtractor;
-            _dimProductRepository = dimProductRepository;
+            _scopeFactory = scopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("=== ETL Worker iniciado ===");
 
+            // Crear un scope para los servicios Scoped
+            using var scope = _scopeFactory.CreateScope();
+
+            var productCsvRepository = scope.ServiceProvider.GetRequiredService<IProductRepository>();
+            var databaseExtractor = scope.ServiceProvider.GetRequiredService<IDatabaseExtractor>();
+            var apiExtractor = scope.ServiceProvider.GetRequiredService<IAPIExtractor>();
+            var dimProductRepository = scope.ServiceProvider.GetRequiredService<IDimProductRepository>();
+
             try
             {
                 // 1️ EXTRACT (Desde CSV)
                 _logger.LogInformation("Extrayendo productos desde CSV...");
-                var csvProducts = await _productCsvRepository.GetAll();
+                var csvProducts = await productCsvRepository.GetAll();
                 _logger.LogInformation($"Productos CSV extraídos: {csvProducts.Count()}");
 
                 // 2️ EXTRACT (Desde BD)
                 _logger.LogInformation("Extrayendo datos desde base de datos transaccional...");
-                var dbProductsRaw = await _databaseExtractor.GetAllAsync<ProductDB>();
+                var dbProductsRaw = await databaseExtractor.GetAllAsync<ProductDB>();
                 var dbProducts = dbProductsRaw.Select(p => new Product
                 {
                     ProductID = p.ProductID,
@@ -60,7 +57,7 @@ namespace AnalisisVentasETL.WRKVentas
 
                 // 3️ EXTRACT (Desde API)
                 _logger.LogInformation("Extrayendo datos desde API externa...");
-                var apiProductsRaw = await _apiExtractor.GetDataAsync<ProductAPI>("api/products");
+                var apiProductsRaw = await apiExtractor.GetDataAsync<ProductAPI>("api/products");
                 _logger.LogInformation($"Productos API extraídos: {apiProductsRaw.Count()}");
 
                 // 4️ TRANSFORM (Unificación simple)
@@ -94,7 +91,6 @@ namespace AnalisisVentasETL.WRKVentas
                     Source = "API"
                 }).ToList();
 
-
                 var allProducts = csvMapped
                     .Concat(dbMapped)
                     .Concat(apiMapped)
@@ -113,7 +109,7 @@ namespace AnalisisVentasETL.WRKVentas
                     UploadDate = DateTime.UtcNow
                 }).ToList();
 
-                await _dimProductRepository.BulkInsertAsync(dimProducts);
+                await dimProductRepository.BulkInsertAsync(dimProducts);
 
                 _logger.LogInformation("Carga completada en la Dimensión Producto (DWH).");
                 _logger.LogInformation("=== ETL finalizado correctamente ===");

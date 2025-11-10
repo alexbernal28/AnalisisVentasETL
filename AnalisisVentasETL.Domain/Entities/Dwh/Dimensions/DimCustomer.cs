@@ -1,7 +1,12 @@
-﻿namespace AnalisisVentasETL.Domain.Entities.Dwh.Dimensions
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AnalisisVentasETL.Domain.Entities.Dwh.Dimensions
 {
+    [Table("DimCustomer")]
     public class DimCustomer
     {
+        [Key]
         public int CustomerKey { get; set; }
 
         public int CustomerId { get; set; }
