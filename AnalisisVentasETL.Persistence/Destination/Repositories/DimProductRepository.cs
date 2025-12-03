@@ -38,6 +38,11 @@ namespace AnalisisVentasETL.Persistence.Destination.Repositories
             throw new NotImplementedException();
         }
 
+        public async Task DeleteAll()
+        {
+            await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Dimension].[DimProduct]");
+        }
+
         public Task SaveAll(DimProduct[] entities)
         {
             throw new NotImplementedException();

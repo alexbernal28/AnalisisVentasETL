@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AnalisisVentasETL.Domain.Entities.Dwh.Dimensions
 {
-    [Table("DimCustomer")]
+    [Table("DimCustomer", Schema = "Dimension")]
     public class DimCustomer
     {
         [Key]

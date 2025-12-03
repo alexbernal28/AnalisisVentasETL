@@ -7,7 +7,9 @@ using AnalisisVentasETL.Domain.Entities.Csv;
 using AnalisisVentasETL.Domain.Entities.Db;
 using AnalisisVentasETL.Domain.Entities.Dwh.Dimensions;
 using AnalisisVentasETL.Persistence.Sources.API.Repositories;
+using AnalisisVentasETL.WRKVentas.Loaders;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using System.Linq;
 
 namespace AnalisisVentasETL.WRKVentas
@@ -30,93 +32,61 @@ namespace AnalisisVentasETL.WRKVentas
             // Crear un scope para los servicios Scoped
             using var scope = _scopeFactory.CreateScope();
 
-            var productCsvRepository = scope.ServiceProvider.GetRequiredService<IProductRepository>();
-            var databaseExtractor = scope.ServiceProvider.GetRequiredService<IDatabaseExtractor>();
-            var apiExtractor = scope.ServiceProvider.GetRequiredService<IAPIExtractor>();
-            var dimProductRepository = scope.ServiceProvider.GetRequiredService<IDimProductRepository>();
+            // Obtener todos los repositorios necesarios
+            //var productCsvRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
+            //var customerCsvRepo = scope.ServiceProvider.GetRequiredService<ICustomerRepository>();
+            //var orderCsvRepo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
+            //var orderDetailCsvRepo = scope.ServiceProvider.GetRequiredService<IOrderDetailRepository>();
+            
+            //var databaseExtractor = scope.ServiceProvider.GetRequiredService<IDatabaseExtractor>();
+            //var apiExtractor = scope.ServiceProvider.GetRequiredService<IAPIExtractor>();
+            
+            //var dimProductRepo = scope.ServiceProvider.GetRequiredService<IDimProductRepository>();
+            //var dimCustomerRepo = scope.ServiceProvider.GetRequiredService<IDimCustomer>();
+            //var dimTimeRepo = scope.ServiceProvider.GetRequiredService<IDimTime>();
+            //var dimDataSourceRepo = scope.ServiceProvider.GetRequiredService<IDimDataSource>();
+
+            var dsLoader = scope.ServiceProvider.GetRequiredService<DimDataSourceLoader>();
+            var dimProductLoader = scope.ServiceProvider.GetRequiredService<DimProductLoader>();
+            var dimCustomerLoader = scope.ServiceProvider.GetRequiredService<DimCustomerLoader>();
+            var dimTimeLoader = scope.ServiceProvider.GetRequiredService<DimTimeLoader>();
 
             try
             {
-                // 1️ EXTRACT (Desde CSV)
-                _logger.LogInformation("Extrayendo productos desde CSV...");
-                var csvProducts = await productCsvRepository.GetAll();
-                _logger.LogInformation($"Productos CSV extraídos: {csvProducts.Count()}");
+                // CARGAR DimDataSource (Fuentes de Datos)
+                _logger.LogInformation("--- PASO 1: Cargando DimDataSource ---");
 
-                // 2️ EXTRACT (Desde BD)
-                _logger.LogInformation("Extrayendo datos desde base de datos transaccional...");
-                var dbProductsRaw = await databaseExtractor.GetAllAsync<ProductDB>();
-                var dbProducts = dbProductsRaw.Select(p => new Product
-                {
-                    ProductID = p.ProductID,
-                    ProductName = p.ProductName,
-                    Category = p.Category,
-                    Price = p.Price,
-                    Stock = p.Stock,
-                }).ToList();
-                _logger.LogInformation($"Productos BD extraídos: {dbProducts.Count()}");
+                await dsLoader.LoadAsync();
 
-                // 3️ EXTRACT (Desde API)
-                _logger.LogInformation("Extrayendo datos desde API externa...");
-                var apiProductsRaw = await apiExtractor.GetDataAsync<ProductAPI>("api/products");
-                _logger.LogInformation($"Productos API extraídos: {apiProductsRaw.Count()}");
+                // CARGAR DimProduct
+                _logger.LogInformation("--- PASO 2: Procesando DimCustomer ---");
 
-                // 4️ TRANSFORM (Unificación simple)
-                var csvMapped = csvProducts.Select(p => new ProductUnifiedDto
-                {
-                    ProductID = p.ProductID,
-                    ProductName = p.ProductName,
-                    Category = p.Category,
-                    Price = p.Price,
-                    Stock = p.Stock,
-                    Source = "CSV"
-                }).ToList();
+                await dimCustomerLoader.LoadAsync();
 
-                var dbMapped = dbProductsRaw.Select(p => new ProductUnifiedDto
-                {
-                    ProductID = p.ProductID,
-                    ProductName = p.ProductName,
-                    Category = p.Category,
-                    Price = p.Price,
-                    Stock = p.Stock,
-                    Source = "DB"
-                }).ToList();
+                // EXTRAER Y CARGAR DimCustomer
+                _logger.LogInformation("--- PASO 3: Procesando DimProduct ---");
 
-                var apiMapped = apiProductsRaw.Select(p => new ProductUnifiedDto
-                {
-                    ProductID = p.ProductID,
-                    ProductName = p.ProductName,
-                    Category = p.Category,
-                    Price = p.Price,
-                    Stock = p.Stock,
-                    Source = "API"
-                }).ToList();
+                await dimProductLoader.LoadAsync();
 
-                var allProducts = csvMapped
-                    .Concat(dbMapped)
-                    .Concat(apiMapped)
-                    .ToList();
+                // EXTRAER Y CARGAR DimTime
+                _logger.LogInformation("--- PASO 4: Procesando DimTime ---");
 
-                var unique = allProducts.DistinctBy(p => p.ProductID).ToList();
+                await dimTimeLoader.LoadAsync();
 
-                // 5️ LOAD (Carga en DWH)
-                var dimProducts = unique.Select(p => new DimProduct
-                {
-                    ProductID = p.ProductID,
-                    Name = p.ProductName,
-                    Category = p.Category,
-                    UnitPrice = p.Price,
-                    Stock = p.Stock,
-                    UploadDate = DateTime.UtcNow
-                }).ToList();
-
-                await dimProductRepository.BulkInsertAsync(dimProducts);
-
-                _logger.LogInformation("Carga completada en la Dimensión Producto (DWH).");
-                _logger.LogInformation("=== ETL finalizado correctamente ===");
+                // RESUMEN FINAL
+                _logger.LogInformation("========================================");
+                _logger.LogInformation("=== ETL FINALIZADO EXITOSAMENTE ===");
+                //_logger.LogInformation("Dimensiones cargadas:");
+                //_logger.LogInformation("  - DimDataSource: {Count}", dataSources.Count);
+                //_logger.LogInformation("  - DimProduct: {Count}", uniqueProducts.Count);
+                //_logger.LogInformation("  - DimCustomer: {Count}", uniqueCustomers.Length);
+                //_logger.LogInformation("  - DimTime: {Count}", dimTimes.Length);
+                _logger.LogInformation("========================================");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error durante la ejecución del proceso ETL.");
+                _logger.LogError(ex, "ERROR CRÍTICO durante la ejecución del ETL");
+                throw;
             }
         }
     }

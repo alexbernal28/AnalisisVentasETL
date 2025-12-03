@@ -1,7 +1,10 @@
-﻿namespace AnalisisVentasETL.Domain.Entities.Csv
+﻿using CsvHelper.Configuration.Attributes;
+
+namespace AnalisisVentasETL.Domain.Entities.Csv
 {
     public class Customer
     {
+        [Name("CustomerID")]
         public int CustomerId { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
