@@ -44,40 +44,40 @@ namespace AnalisisVentasETL.WRKVentas.Loaders
             all.AddRange(csv.Select(c => new DimCustomer
             {
                 CustomerId = c.CustomerId,
-                Name = c.FirstName,
+                FirstName = c.FirstName,
                 LastName = c.LastName,
                 Email = c.Email,
                 Country = c.Country,
                 Region = c.City,
                 gender = "N/A",
                 CustomerType = "Regular",
-                UploadAt = DateTime.UtcNow
+                UploadDate = DateTime.UtcNow
             }));
 
             all.AddRange(db.Select(c => new DimCustomer
             {
                 CustomerId = c.CustomerId,
-                Name = c.FirstName,
+                FirstName = c.FirstName,
                 LastName = c.LastName,
                 Email = c.Email,
                 Country = c.Country,
                 Region = c.City,
                 gender = "N/A",
                 CustomerType = "Regular",
-                UploadAt = DateTime.UtcNow
+                UploadDate = DateTime.UtcNow
             }));
 
             all.AddRange(api.Select(c => new DimCustomer
             {
                 CustomerId = c.CustomerId,
-                Name = c.FirstName,
+                FirstName = c.FirstName,
                 LastName = c.LastName,
                 Email = c.Email,
                 Country = c.Country,
                 Region = c.City,
                 gender = "N/A",
                 CustomerType = "Regular",
-                UploadAt = DateTime.UtcNow
+                UploadDate = DateTime.UtcNow
             }));
 
             var uniqueCustomers = all

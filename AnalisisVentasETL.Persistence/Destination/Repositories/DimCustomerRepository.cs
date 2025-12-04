@@ -14,6 +14,15 @@ namespace AnalisisVentasETL.Persistence.Destination.Repositories
             _context = context;
         }
 
+        public async Task BulkInsertAsync(IEnumerable<DimCustomer> customers)
+        {
+            _context.DimCustomers.RemoveRange(_context.DimCustomers);
+
+            await _context.DimCustomers.AddRangeAsync(customers);
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task SaveAll(DimCustomer[] dimCustomers)
         {
             await _context.DimCustomers.AddRangeAsync(dimCustomers);

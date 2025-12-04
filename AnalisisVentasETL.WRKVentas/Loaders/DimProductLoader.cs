@@ -80,7 +80,7 @@ namespace AnalisisVentasETL.WRKVentas.Loaders
                 .Select(g => g.First())
                 .ToList();
 
-            await _dimProductRepository.BulkInsertAsync(unique);
+            await _dimProductRepository.SaveAll(unique.ToArray());
 
             _logger.LogInformation("DimProduct cargado correctamente ({Count} registros únicos).", unique.Count);
         }

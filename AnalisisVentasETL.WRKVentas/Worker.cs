@@ -33,18 +33,6 @@ namespace AnalisisVentasETL.WRKVentas
             using var scope = _scopeFactory.CreateScope();
 
             // Obtener todos los repositorios necesarios
-            //var productCsvRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
-            //var customerCsvRepo = scope.ServiceProvider.GetRequiredService<ICustomerRepository>();
-            //var orderCsvRepo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
-            //var orderDetailCsvRepo = scope.ServiceProvider.GetRequiredService<IOrderDetailRepository>();
-            
-            //var databaseExtractor = scope.ServiceProvider.GetRequiredService<IDatabaseExtractor>();
-            //var apiExtractor = scope.ServiceProvider.GetRequiredService<IAPIExtractor>();
-            
-            //var dimProductRepo = scope.ServiceProvider.GetRequiredService<IDimProductRepository>();
-            //var dimCustomerRepo = scope.ServiceProvider.GetRequiredService<IDimCustomer>();
-            //var dimTimeRepo = scope.ServiceProvider.GetRequiredService<IDimTime>();
-            //var dimDataSourceRepo = scope.ServiceProvider.GetRequiredService<IDimDataSource>();
 
             var dsLoader = scope.ServiceProvider.GetRequiredService<DimDataSourceLoader>();
             var dimProductLoader = scope.ServiceProvider.GetRequiredService<DimProductLoader>();
@@ -58,29 +46,24 @@ namespace AnalisisVentasETL.WRKVentas
 
                 await dsLoader.LoadAsync();
 
+                // EXTRAER Y CARGAR DimTime
+                _logger.LogInformation("--- PASO 2: Procesando DimTime ---");
+
+                await dimTimeLoader.LoadAsync();
+
                 // CARGAR DimProduct
-                _logger.LogInformation("--- PASO 2: Procesando DimCustomer ---");
+                _logger.LogInformation("--- PASO 3: Procesando DimProduct ---");
 
                 await dimCustomerLoader.LoadAsync();
 
                 // EXTRAER Y CARGAR DimCustomer
-                _logger.LogInformation("--- PASO 3: Procesando DimProduct ---");
+                _logger.LogInformation("--- PASO 4: Procesando DimProduct ---");
 
                 await dimProductLoader.LoadAsync();
-
-                // EXTRAER Y CARGAR DimTime
-                _logger.LogInformation("--- PASO 4: Procesando DimTime ---");
-
-                await dimTimeLoader.LoadAsync();
 
                 // RESUMEN FINAL
                 _logger.LogInformation("========================================");
                 _logger.LogInformation("=== ETL FINALIZADO EXITOSAMENTE ===");
-                //_logger.LogInformation("Dimensiones cargadas:");
-                //_logger.LogInformation("  - DimDataSource: {Count}", dataSources.Count);
-                //_logger.LogInformation("  - DimProduct: {Count}", uniqueProducts.Count);
-                //_logger.LogInformation("  - DimCustomer: {Count}", uniqueCustomers.Length);
-                //_logger.LogInformation("  - DimTime: {Count}", dimTimes.Length);
                 _logger.LogInformation("========================================");
             }
             catch (Exception ex)
