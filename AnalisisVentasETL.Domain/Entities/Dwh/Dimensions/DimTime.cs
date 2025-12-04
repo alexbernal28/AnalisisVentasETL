@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AnalisisVentasETL.Domain.Entities.Dwh.Dimensions
 {
-    [Table("DimTime")]
+    [Table("DimTime", Schema = "Dimension")]
     public class DimTime
     {
         [Key]

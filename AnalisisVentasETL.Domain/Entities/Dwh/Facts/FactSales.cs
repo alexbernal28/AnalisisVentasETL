@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AnalisisVentasETL.Domain.Entities.Dwh.Facts
 {
-    [Table("FactSales")]
+    [Table("FactSales", Schema = "Fact")]
     public class FactSales
     {
         [Key]
@@ -15,5 +15,6 @@ namespace AnalisisVentasETL.Domain.Entities.Dwh.Facts
         public decimal UnitPrice { get; set; }
         public decimal Total { get; set; }
         public string? SalesChannel { get; set; }
+        public int SourceID { get; set; }
     }
 }
