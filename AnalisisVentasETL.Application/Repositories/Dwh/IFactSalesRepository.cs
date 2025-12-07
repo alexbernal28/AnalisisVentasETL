@@ -3,7 +3,8 @@ using AnalisisVentasETL.Domain.Repository;
 
 namespace AnalisisVentasETL.Application.Repositories.Dwh
 {
-    public interface IFactSales : IBaseDwhRepository<FactSales>
+    public interface IFactSalesRepository : IBaseDwhRepository<FactSales>
     {
+        Task BulkInsertAsync(IEnumerable<FactSales> entities);
     }
 }

@@ -38,6 +38,7 @@ namespace AnalisisVentasETL.WRKVentas
             var dimProductLoader = scope.ServiceProvider.GetRequiredService<DimProductLoader>();
             var dimCustomerLoader = scope.ServiceProvider.GetRequiredService<DimCustomerLoader>();
             var dimTimeLoader = scope.ServiceProvider.GetRequiredService<DimTimeLoader>();
+            var factSalesLoader = scope.ServiceProvider.GetRequiredService<FactSalesLoader>();
 
             try
             {
@@ -52,7 +53,7 @@ namespace AnalisisVentasETL.WRKVentas
                 await dimTimeLoader.LoadAsync();
 
                 // CARGAR DimProduct
-                _logger.LogInformation("--- PASO 3: Procesando DimProduct ---");
+                _logger.LogInformation("--- PASO 3: Procesando DimCustomer ---");
 
                 await dimCustomerLoader.LoadAsync();
 
@@ -61,9 +62,15 @@ namespace AnalisisVentasETL.WRKVentas
 
                 await dimProductLoader.LoadAsync();
 
+                // EXTRAER Y CARGAR FactSales
+                _logger.LogInformation("--- PASO 5: Procesando FactSales ---");
+
+                await factSalesLoader.LoadAsync();
+
                 // RESUMEN FINAL
                 _logger.LogInformation("========================================");
                 _logger.LogInformation("=== ETL FINALIZADO EXITOSAMENTE ===");
+                _logger.LogInformation("Todas las dimensiones y hechos han sido cargados correctamente.");
                 _logger.LogInformation("========================================");
             }
             catch (Exception ex)

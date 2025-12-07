@@ -64,15 +64,18 @@ namespace AnalisisVentasETL.WRKVentas.Loaders
                 UploadDate = DateTime.UtcNow
             }));
 
-            all.AddRange(api.Select(p => new DimProduct
+            if (api.Any())
             {
-                ProductID = p.ProductID,
-                Name = p.ProductName,
-                Category = p.Category,
-                UnitPrice = p.Price,
-                Stock = p.Stock,
-                UploadDate = DateTime.UtcNow
-            }));
+                all.AddRange(api.Select(p => new DimProduct
+                {
+                    ProductID = p.ProductID,
+                    Name = p.ProductName,
+                    Category = p.Category,
+                    UnitPrice = p.Price,
+                    Stock = p.Stock,
+                    UploadDate = DateTime.UtcNow
+                }));
+            }
 
             // QUITAR DUPLICADOS
             var unique = all

@@ -44,9 +44,10 @@ namespace AnalisisVentasETL.WRKVentas
 
             // Repositories DWH
             builder.Services.AddScoped<IDimProductRepository, DimProductRepository>();
-            builder.Services.AddScoped<IDimCustomer, DimCustomerRepository>();
-            builder.Services.AddScoped<IDimTime, DimTimeRepository>();
-            builder.Services.AddScoped<IDimDataSource, DimDataSourceRepository>();
+            builder.Services.AddScoped<IDimCustomerRepository, DimCustomerRepository>();
+            builder.Services.AddScoped<IDimTimeRepository, DimTimeRepository>();
+            builder.Services.AddScoped<IDimDataSourceRepository, DimDataSourceRepository>();
+            builder.Services.AddScoped<IFactSalesRepository, FactSalesRepository>();
 
             // Generic Data Loader
             builder.Services.AddScoped(typeof(IDataLoader<>), typeof(DataLoader<>));
@@ -55,6 +56,7 @@ namespace AnalisisVentasETL.WRKVentas
             builder.Services.AddScoped<DimProductLoader>();
             builder.Services.AddScoped<DimCustomerLoader>();
             builder.Services.AddScoped<DimTimeLoader>();
+            builder.Services.AddScoped<FactSalesLoader>();
 
             // Worker Service
             builder.Services.AddHostedService<Worker>();

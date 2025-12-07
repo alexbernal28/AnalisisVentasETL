@@ -3,7 +3,8 @@ using AnalisisVentasETL.Domain.Repository;
 
 namespace AnalisisVentasETL.Application.Repositories.Dwh
 {
-    public interface IDimTime : IBaseDwhRepository<DimTime>
+    public interface IDimCustomerRepository : IBaseDwhRepository<DimCustomer>
     {
+        Task BulkInsertAsync(IEnumerable<DimCustomer> products);
     }
 }

@@ -3,7 +3,7 @@ using AnalisisVentasETL.Domain.Repository;
 
 namespace AnalisisVentasETL.Application.Repositories.Dwh
 {
-    public interface IDimDataSource : IBaseDwhRepository<DimDataSource>
+    public interface IDimTimeRepository : IBaseDwhRepository<DimTime>
     {
     }
 }

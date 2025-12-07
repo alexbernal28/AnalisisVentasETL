@@ -23,19 +23,20 @@ namespace AnalisisVentasETL.Persistence.Destination.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public Task<bool> Exists(Expression<Func<DimProduct, bool>> filter)
+        public async Task<bool> Exists(Expression<Func<DimProduct, bool>> filter)
         {
-            throw new NotImplementedException();
+            return await _context.DimProducts.AnyAsync(filter);
         }
 
-        public Task<List<DimProduct>> GetAll()
+        public async Task<List<DimProduct>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _context.DimProducts.ToListAsync();
         }
 
-        public Task RemoveAll(DimProduct[] entities)
+        public async Task RemoveAll(DimProduct[] entities)
         {
-            throw new NotImplementedException();
+            _context.DimProducts.RemoveRange(entities);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAll()

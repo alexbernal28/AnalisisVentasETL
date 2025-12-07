@@ -13,13 +13,13 @@ namespace AnalisisVentasETL.WRKVentas.Loaders
         private readonly ICustomerRepository _csvRepository;
         private readonly IDatabaseExtractor _dbRepository;
         private readonly IAPIExtractor _apiRepository;
-        private readonly IDimCustomer _dimCustomerRepository;
+        private readonly IDimCustomerRepository _dimCustomerRepository;
         private readonly ILogger<DimCustomerLoader> _logger;
         public DimCustomerLoader(
             ICustomerRepository csvRepository,
             IDatabaseExtractor dbRepository,
             IAPIExtractor apiRepository,
-            IDimCustomer dimCustomerRepository,
+            IDimCustomerRepository dimCustomerRepository,
             ILogger<DimCustomerLoader> logger)
         {
             _csvRepository = csvRepository;

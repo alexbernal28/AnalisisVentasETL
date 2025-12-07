@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace AnalisisVentasETL.Persistence.Destination.Repositories
 {
-    public class DimTimeRepository : IDimTime
+    public class DimTimeRepository : IDimTimeRepository
     {
         private readonly DwhDBContext _context;
 
