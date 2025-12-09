@@ -67,18 +67,21 @@ namespace AnalisisVentasETL.WRKVentas.Loaders
                 UploadDate = DateTime.UtcNow
             }));
 
-            all.AddRange(api.Select(c => new DimCustomer
+            if (api.Any())
             {
-                CustomerId = c.CustomerId,
-                FirstName = c.FirstName,
-                LastName = c.LastName,
-                Email = c.Email,
-                Country = c.Country,
-                Region = c.City,
-                gender = "N/A",
-                CustomerType = "Regular",
-                UploadDate = DateTime.UtcNow
-            }));
+                all.AddRange(api.Select(c => new DimCustomer
+                {
+                    CustomerId = c.CustomerId,
+                    FirstName = c.FirstName,
+                    LastName = c.LastName,
+                    Email = c.Email,
+                    Country = c.Country,
+                    Region = c.City,
+                    gender = "N/A",
+                    CustomerType = "Regular",
+                    UploadDate = DateTime.UtcNow
+                }));
+            }
 
             var uniqueCustomers = all
                 .GroupBy(c => c.CustomerId)
