@@ -5,10 +5,10 @@ namespace AnalisisVentasETL.WRKVentas.Loaders
 {
     public class DimDataSourceLoader
     {
-        private readonly IDimDataSource _dimDataSourceRepository;
+        private readonly IDimDataSourceRepository _dimDataSourceRepository;
         private readonly ILogger<DimDataSourceLoader> _logger;
 
-        public DimDataSourceLoader(IDimDataSource dimDataSourceRepository, ILogger<DimDataSourceLoader> logger)
+        public DimDataSourceLoader(IDimDataSourceRepository dimDataSourceRepository, ILogger<DimDataSourceLoader> logger)
         {
             _dimDataSourceRepository = dimDataSourceRepository;
             _logger = logger;

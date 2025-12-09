@@ -11,13 +11,13 @@ namespace AnalisisVentasETL.WRKVentas.Loaders
     {
         private readonly IOrderRepository _csvRepository;
         private readonly IDatabaseExtractor _dbRepository;
-        private readonly IDimTime _dimTimeRepository;
+        private readonly IDimTimeRepository _dimTimeRepository;
         private readonly ILogger<DimTimeLoader> _logger;
 
         public DimTimeLoader(
             IOrderRepository csvRepository,
             IDatabaseExtractor dbRepository,
-            IDimTime dimTimeRepository,
+            IDimTimeRepository dimTimeRepository,
             ILogger<DimTimeLoader> logger)
         {
             _csvRepository = csvRepository;

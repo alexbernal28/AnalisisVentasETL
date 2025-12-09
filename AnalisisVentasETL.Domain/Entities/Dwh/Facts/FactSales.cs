@@ -7,7 +7,7 @@ namespace AnalisisVentasETL.Domain.Entities.Dwh.Facts
     public class FactSales
     {
         [Key]
-        public int SalesKey { get; set; }
+        public int SaleKey { get; set; }
         public int TimeKey { get; set; }
         public int CustomerKey { get; set; }
         public int ProductKey { get; set; }
